@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import { useWeatherPrices } from '@/hooks/useWeatherPrices';
@@ -19,20 +19,31 @@ import { formatEnergy, getCurrentSeason } from '@/lib/utils';
 import { WEATHER_CONFIGS, TREND_COLORS } from '@/constants/config';
 import type { WeatherType } from '@/types';
 
-export default function WeatherDetailPage({ params }: { params: { type: WeatherType } }) {
+export default function WeatherDetailPage({ params }: { params: Promise<{ type: WeatherType }> }) {
   const router = useRouter();
   const { weatherData } = useWeatherPrices();
   const { portfolio, executeTrade, getHolding, getMaxBuyQuantity, getMaxSellQuantity } = usePortfolio(weatherData);
   
-  const weather = weatherData.find(w => w.type === params.type);
-  const holding = getHolding(params.type);
+  // Next.js 15: params is now a Promise
+  const [weatherType, setWeatherType] = useState<WeatherType | null>(null);
+  
+  useEffect(() => {
+    params.then(p => setWeatherType(p.type));
+  }, [params]);
+  
+  const weather = weatherData.find(w => w.type === weatherType);
+  const holding = weatherType ? getHolding(weatherType) : undefined;
   
   const [action, setAction] = useState<'buy' | 'sell'>('buy');
   const [quantity, setQuantity] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  if (!weather) {
-    return <div className="p-6">날씨 정보를 찾을 수 없습니다.</div>;
+  if (!weather || !weatherType) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-xl text-gray-600">로딩 중...</p>
+      </div>
+    );
   }
 
   const config = WEATHER_CONFIGS[weather.type];
