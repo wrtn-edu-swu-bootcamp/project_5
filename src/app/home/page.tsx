@@ -1,0 +1,144 @@
+/**
+ * 메인 홈 페이지
+ * 참고: docs/architecture.md 1310-1408줄
+ */
+
+'use client';
+
+import { useState } from 'react';
+import { motion } from 'motion/react';
+import { useWeatherPrices } from '@/hooks/useWeatherPrices';
+import { usePortfolio } from '@/hooks/usePortfolio';
+import { WeatherIcon } from '@/components/weather/WeatherIcon';
+import { formatEnergy, formatPercent, getCurrentSeason, getSeasonEmoji } from '@/lib/utils';
+import { Button } from '@/components/ui/Button';
+import Link from 'next/link';
+
+export default function HomePage() {
+  const { weatherData, isLoading, lastUpdate } = useWeatherPrices();
+  const { totalValue, profitLoss, profitLossPercent } = usePortfolio(weatherData);
+
+  if (isLoading || weatherData.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+            className="text-6xl mb-4"
+          >
+            🌤️
+          </motion.div>
+          <p className="text-xl text-gray-600">로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const isProfitable = profitLoss >= 0;
+  const season = getCurrentSeason();
+  const seasonEmoji = getSeasonEmoji();
+
+  return (
+    <main className="min-h-screen pb-20">
+      {/* 헤더 */}
+      <header className="p-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">🌤️ 날씨 에너지</h1>
+        <Link href="/settings">
+          <button className="text-2xl">⚙️</button>
+        </Link>
+      </header>
+
+      {/* 원형 레이아웃 */}
+      <div className="relative w-full h-96 flex items-center justify-center mb-8">
+        {/* 중앙: 총 에너지 표시 */}
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: 'spring', stiffness: 200 }}
+          className="absolute z-10 text-center"
+        >
+          <p className="text-4xl font-bold mb-2">
+            💎 {formatEnergy(totalValue)}
+          </p>
+          <p className="text-sm text-gray-600 mb-1">내 에너지</p>
+          <motion.div
+            animate={isProfitable ? {
+              scale: [1, 1.1, 1],
+            } : {}}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            <p className={`text-lg font-semibold ${
+              isProfitable ? 'text-green-600' : 'text-red-600'
+            }`}>
+              {isProfitable ? '🟢' : '🔴'} {profitLoss >= 0 ? '+' : ''}{formatEnergy(profitLoss)}
+              <span className="text-sm ml-1">
+                ({formatPercent(profitLossPercent)})
+              </span>
+            </p>
+          </motion.div>
+        </motion.div>
+
+        {/* 원형 배치: 4가지 날씨 아이콘 */}
+        {weatherData.map((weather, index) => {
+          // 12시 방향부터 시계방향으로 90도씩 배치
+          const angle = (index * 90 - 90) * (Math.PI / 180);
+          const radius = 140;
+          const x = Math.cos(angle) * radius;
+          const y = Math.sin(angle) * radius;
+
+          return (
+            <motion.div
+              key={weather.type}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.1 }}
+              className="absolute top-1/2 left-1/2"
+              style={{
+                transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
+              }}
+            >
+              <Link href={`/weather/${weather.type}`}>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="focus:outline-none"
+                >
+                  <WeatherIcon
+                    type={weather.type}
+                    trend={weather.trend}
+                    size="lg"
+                    animated={true}
+                  />
+                </motion.button>
+              </Link>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* 계절 정보 */}
+      <section className="px-6 mb-6">
+        <div className="bg-white rounded-2xl p-4 shadow-md">
+          <p className="text-center text-gray-700">
+            {seasonEmoji} <span className="font-semibold">{new Date().getMonth() + 1}월 {season}</span>
+            <span className="mx-2">•</span>
+            <span className="text-sm">3분마다 자동 업데이트</span>
+          </p>
+          <p className="text-center text-sm text-gray-500 mt-1">
+            마지막 업데이트: {new Date(lastUpdate).toLocaleTimeString('ko-KR')}
+          </p>
+        </div>
+      </section>
+
+      {/* 내 보관함 버튼 */}
+      <section className="px-6">
+        <Link href="/portfolio">
+          <Button variant="primary" className="w-full">
+            내 보관함 보기 →
+          </Button>
+        </Link>
+      </section>
+    </main>
+  );
+}
