@@ -16,7 +16,7 @@ import Link from 'next/link';
 
 export default function HomePage() {
   const { weatherData, isLoading, lastUpdate } = useWeatherPrices();
-  const { totalValue, profitLoss, profitLossPercent } = usePortfolio(weatherData);
+  const { totalValue, profitLoss, profitLossPercent, getHolding } = usePortfolio(weatherData);
 
   if (isLoading || weatherData.length === 0) {
     return (
@@ -34,10 +34,6 @@ export default function HomePage() {
       </div>
     );
   }
-
-  // 디버그: weatherData 확인
-  console.log('weatherData:', weatherData);
-  console.log('weatherData.length:', weatherData.length);
 
   const isProfitable = profitLoss >= 0;
   const season = getCurrentSeason();
@@ -62,7 +58,7 @@ export default function HomePage() {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 200 }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 text-center"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 text-center glass rounded-3xl p-6"
           >
             <p className="text-3xl font-bold mb-2">
               💎 {formatEnergy(totalValue)}
@@ -98,6 +94,10 @@ export default function HomePage() {
             const x = centerX + Math.cos(angle) * radius - iconSize / 2;
             const y = centerY + Math.sin(angle) * radius - iconSize / 2;
 
+            // 보유량 조회
+            const holding = getHolding(weather.type);
+            const hasHolding = holding && holding.quantity > 0;
+
             return (
               <motion.div
                 key={weather.type}
@@ -114,7 +114,7 @@ export default function HomePage() {
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
-                    className="focus:outline-none"
+                    className="focus:outline-none flex flex-col items-center"
                   >
                     <WeatherIcon
                       type={weather.type}
@@ -122,6 +122,18 @@ export default function HomePage() {
                       size="lg"
                       animated={true}
                     />
+                    
+                    {/* 보유량 표시 */}
+                    {hasHolding && (
+                      <div className="mt-2 text-center glass rounded-lg px-2 py-1">
+                        <p className="text-xs font-bold text-gray-800">
+                          {holding.quantity}개
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          {formatEnergy(holding.currentValue)}
+                        </p>
+                      </div>
+                    )}
                   </motion.button>
                 </Link>
               </motion.div>
@@ -132,7 +144,7 @@ export default function HomePage() {
 
       {/* 계절 정보 */}
       <section className="px-6 mb-6">
-        <div className="bg-white rounded-2xl p-4 shadow-md">
+        <div className="glass rounded-2xl p-4">
           <p className="text-center text-gray-700">
             {seasonEmoji} <span className="font-semibold">{new Date().getMonth() + 1}월 {season}</span>
             <span className="mx-2">•</span>

@@ -54,7 +54,22 @@
 
 /* 기본 스타일 */
 body {
-  background-color: var(--color-bg-main);
+  background: linear-gradient(135deg, 
+    #F0F9FF 0%,    /* 매우 연한 하늘색 */
+    #E0F2FE 50%,   /* 은은한 파랑 */
+    #DBEAFE 100%   /* 부드러운 파랑 */
+  );
+  background-attachment: fixed;
+  min-height: 100vh;
   color: var(--color-text-primary);
   font-family: var(--font-pretendard), -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, "Noto Sans KR", "Malgun Gothic", sans-serif;
+}
+
+/* 글래스모피즘 효과 */
+.glass {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 }

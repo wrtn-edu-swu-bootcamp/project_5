@@ -90,7 +90,7 @@ export function useWeatherPrices() {
 
     // 3. 컴포넌트 언마운트 시 타이머 정리
     return () => clearInterval(interval);
-  }, [updatePrices]);
+  }, []); // 빈 배열: 마운트 시 한 번만 실행
 
   return {
     weatherData,      // 4가지 날씨 데이터

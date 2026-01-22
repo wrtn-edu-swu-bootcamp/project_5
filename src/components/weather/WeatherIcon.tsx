@@ -48,8 +48,7 @@ export function WeatherIcon({
         ${ringColors[trend]}
         rounded-full
         flex items-center justify-center
-        bg-white
-        shadow-md
+        glass
       `}
       animate={shouldAnimate ? {
         scale: [1, 1.1, 1],

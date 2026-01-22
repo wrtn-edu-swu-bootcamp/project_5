@@ -26,6 +26,11 @@ const CURRENT_VERSION = '1.0.0';
  * @param portfolio - 저장할 포트폴리오
  */
 export function savePortfolio(portfolio: Portfolio): void {
+  // SSR 환경 체크
+  if (typeof window === 'undefined') {
+    return;
+  }
+  
   try {
     const jsonString = JSON.stringify(portfolio);
     localStorage.setItem(STORAGE_KEYS.PORTFOLIO, jsonString);
@@ -41,6 +46,11 @@ export function savePortfolio(portfolio: Portfolio): void {
  * @returns 저장된 포트폴리오 또는 null
  */
 export function loadPortfolio(): Portfolio | null {
+  // SSR 환경 체크
+  if (typeof window === 'undefined') {
+    return null;
+  }
+  
   try {
     // 1. 버전 확인
     const savedVersion = localStorage.getItem(STORAGE_KEYS.VERSION);
@@ -94,6 +104,11 @@ export function createInitialPortfolio(): Portfolio {
  * @param settings - 저장할 설정
  */
 export function saveSettings(settings: AppSettings): void {
+  // SSR 환경 체크
+  if (typeof window === 'undefined') {
+    return;
+  }
+  
   try {
     const jsonString = JSON.stringify(settings);
     localStorage.setItem(STORAGE_KEYS.SETTINGS, jsonString);
@@ -107,6 +122,15 @@ export function saveSettings(settings: AppSettings): void {
  * @returns 저장된 설정 또는 기본값
  */
 export function loadSettings(): AppSettings {
+  // SSR 환경 체크
+  if (typeof window === 'undefined') {
+    return {
+      notificationsEnabled: true,
+      soundEnabled: true,
+      theme: 'light',
+    };
+  }
+  
   try {
     const jsonString = localStorage.getItem(STORAGE_KEYS.SETTINGS);
     if (!jsonString) {
@@ -135,6 +159,11 @@ export function loadSettings(): AppSettings {
  * 모든 저장소 초기화 (리셋)
  */
 export function clearAllStorage(): void {
+  // SSR 환경 체크
+  if (typeof window === 'undefined') {
+    return;
+  }
+  
   try {
     Object.values(STORAGE_KEYS).forEach(key => {
       localStorage.removeItem(key);
@@ -149,6 +178,11 @@ export function clearAllStorage(): void {
  * 저장소 사용량 확인 (디버깅용)
  */
 export function checkStorageSize(): number {
+  // SSR 환경 체크
+  if (typeof window === 'undefined') {
+    return 0;
+  }
+  
   try {
     let totalSize = 0;
     Object.values(STORAGE_KEYS).forEach(key => {

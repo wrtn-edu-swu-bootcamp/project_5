@@ -21,7 +21,7 @@ export function Card({
   onClick,
   hoverable = false,
 }: CardProps) {
-  const baseStyles = 'bg-white rounded-3xl p-6 shadow-md';
+  const baseStyles = 'glass rounded-3xl p-6';
   
   const Component = hoverable || onClick ? motion.div : 'div';
   
