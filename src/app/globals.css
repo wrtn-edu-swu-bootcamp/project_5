@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+/* 커스텀 색상 정의 */
+@theme {
+  /* 날씨 색상 */
+  --color-solar-main: #FFB547;
+  --color-solar-secondary: #FF9E3D;
+  --color-solar-bg: #FFF4E0;
+  --color-solar-dark: #E89B2E;
+  
+  --color-wind-main: #7DD3FC;
+  --color-wind-secondary: #A5D8FF;
+  --color-wind-bg: #E8F7FF;
+  --color-wind-dark: #4DB8E8;
+  
+  --color-water-main: #60CFFF;
+  --color-water-secondary: #4FBFDF;
+  --color-water-bg: #E0F7FF;
+  --color-water-dark: #3BA5C9;
+  
+  --color-heat-main: #FF8A80;
+  --color-heat-secondary: #FFB4A9;
+  --color-heat-bg: #FFF0EE;
+  --color-heat-dark: #E67570;
+
+  /* 상태 색상 */
+  --color-success: #5FD4A0;
+  --color-success-bg: #E8F9F1;
+  --color-success-dark: #4CBF8D;
+  
+  --color-caution: #FF8A65;
+  --color-caution-bg: #FFEBE5;
+  --color-caution-dark: #E67355;
+  
+  --color-rising: #FF6B6B;
+  --color-rising-bg: #FFE9E9;
+  
+  --color-falling: #74C0FC;
+  --color-falling-bg: #E7F5FF;
+  
+  --color-stable: #ADB5BD;
+  --color-stable-bg: #F1F3F5;
+
+  /* 배경 색상 */
+  --color-bg-main: #FFFCF7;
+  --color-bg-card: #FFFFFF;
+  --color-border: #E9ECEF;
+  
+  /* 텍스트 색상 */
+  --color-text-primary: #2C3E50;
+  --color-text-secondary: #6B7280;
+  --color-text-light: #9CA3AF;
+}
+
+/* 기본 스타일 */
+body {
+  background-color: var(--color-bg-main);
+  color: var(--color-text-primary);
+  font-family: var(--font-pretendard), -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, "Noto Sans KR", "Malgun Gothic", sans-serif;
+}
