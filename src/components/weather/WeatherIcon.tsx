@@ -39,14 +39,7 @@ export function WeatherIcon({
   };
   
   // 애니메이션 설정
-  const pulseAnimation = trend !== 'stable' && animated ? {
-    scale: [1, 1.1, 1],
-    transition: {
-      duration: 2,
-      repeat: Infinity,
-      ease: 'easeInOut',
-    },
-  } : {};
+  const shouldAnimate = trend !== 'stable' && animated;
 
   return (
     <motion.div
@@ -58,7 +51,14 @@ export function WeatherIcon({
         bg-white
         shadow-md
       `}
-      animate={pulseAnimation}
+      animate={shouldAnimate ? {
+        scale: [1, 1.1, 1],
+      } : undefined}
+      transition={shouldAnimate ? {
+        duration: 2,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      } : undefined}
     >
       <span className="leading-none">{config.emoji}</span>
     </motion.div>

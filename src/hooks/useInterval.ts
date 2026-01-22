@@ -13,7 +13,7 @@ import { useEffect, useRef } from 'react';
  * @param delay - 지연 시간 (밀리초), null이면 정지
  */
 export function useInterval(callback: () => void, delay: number | null) {
-  const savedCallback = useRef<() => void>();
+  const savedCallback = useRef<() => void>(callback);
 
   // 1. 콜백 함수 저장 (최신 버전 유지)
   useEffect(() => {
