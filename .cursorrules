@@ -1,0 +1,672 @@
+# Weather Energy App - Development Rules
+
+## 1. Project Overview
+
+**Target**: Elementary students (10-12 years old)
+**Purpose**: Economic education through weather-based trading simulation
+**Core Concept**: Buy/sell 4 weather types (Solar☀️, Wind💨, Water💧, Heat🌡️) with 3-minute auto price updates based on seasonal patterns
+
+**Tech Stack**:
+- Next.js 15.5 (App Router, Turbopack)
+- React 19.2 (Server Components, useOptimistic)
+- TypeScript 5.7
+- Tailwind CSS v4.1
+- Motion v12 (120fps animations)
+- Recharts 3.6
+- date-fns
+
+## 2. Project Structure
+
+```
+src/
+├── app/              # Next.js App Router pages
+│   ├── layout.tsx
+│   ├── page.tsx      # Onboarding
+│   ├── home/         # Main hub (circular layout)
+│   ├── weather/[type]/  # Weather detail
+│   ├── portfolio/    # Holdings
+│   └── settings/
+├── components/
+│   ├── ui/           # Button, Card, Input, Slider, Modal
+│   ├── weather/      # WeatherCard, WeatherChart, WeatherIcon
+│   ├── portfolio/    # PortfolioSummary, HoldingCard
+│   ├── trading/      # TradingModal, TradeForm
+│   └── layout/       # Navigation, CircularLayout
+├── lib/              # Business logic
+│   ├── weather-simulator.ts
+│   ├── price-calculator.ts
+│   ├── storage.ts
+│   └── utils.ts
+├── hooks/            # Custom hooks
+│   ├── useWeatherPrices.ts
+│   ├── usePortfolio.ts
+│   └── useInterval.ts
+├── types/
+│   └── index.ts      # All TypeScript types
+└── constants/
+    ├── weather-patterns.ts
+    ├── colors.ts
+    └── config.ts
+```
+
+## 3. TypeScript & Coding Conventions
+
+### Type Definitions
+
+**Always define types explicitly**:
+
+```typescript
+// ✅ DO: Define all interfaces in types/index.ts
+export type WeatherType = 'solar' | 'wind' | 'water' | 'heat';
+
+export interface WeatherData {
+  type: WeatherType;
+  name: string;
+  emoji: string;
+  price: number;
+  change: number;
+  changePercent: number;
+  trend: 'rising' | 'falling' | 'stable';
+  history: PriceHistory[];
+}
+
+export interface Portfolio {
+  energy: number;
+  totalValue: number;
+  profitLoss: number;
+  holdings: Holding[];
+  transactions: Transaction[];
+}
+```
+
+### Naming Conventions
+
+- **Components**: PascalCase (`WeatherCard`, `TradingModal`)
+- **Hooks**: camelCase with `use` prefix (`useWeatherPrices`)
+- **Utils/Libs**: camelCase (`generateWeatherPrice`, `executeBuy`)
+- **Types**: PascalCase (`WeatherData`, `Portfolio`)
+- **Constants**: UPPER_SNAKE_CASE (`SEASONAL_PATTERNS`, `UPDATE_INTERVAL`)
+
+### File Organization
+
+```typescript
+// ✅ DO: Group imports logically
+import { useState, useEffect } from 'react';
+import type { WeatherData } from '@/types';
+import { generateWeatherPrice } from '@/lib/weather-simulator';
+import { WEATHER_CONFIGS } from '@/constants/config';
+
+// ❌ DON'T: Mix import types
+import React, { useState } from 'react';
+```
+
+## 4. Design System
+
+### Color Palette
+
+**Weather Colors** (use exact hex values):
+```typescript
+const WEATHER_COLORS = {
+  solar: {
+    main: '#FFB547',     // Warm yellow
+    bg: '#FFF4E0',       // Sunlight background
+    trend: '#FF9E3D'
+  },
+  wind: {
+    main: '#7DD3FC',     // Sky blue
+    bg: '#E8F7FF',
+    trend: '#A5D8FF'
+  },
+  water: {
+    main: '#60CFFF',     // Bright cyan
+    bg: '#E0F7FF',
+    trend: '#4FBFDF'
+  },
+  heat: {
+    main: '#FF8A80',     // Coral red
+    bg: '#FFF0EE',
+    trend: '#FFB4A9'
+  }
+} as const;
+```
+
+**State Colors**:
+- Rising 🔥: `#FF6B6B` with `#FFE9E9` background
+- Falling ❄️: `#74C0FC` with `#E7F5FF` background
+- Stable ⚪: `#ADB5BD` with `#F1F3F5` background
+- Success 🟢: `#5FD4A0`
+- Warning 🔴: `#FF8A65`
+
+**Background**:
+- Main: `#FFFCF7` (warm ivory)
+- Card: `#FFFFFF` with `shadow-md`
+
+### Typography
+
+**Use Pretendard font**:
+```typescript
+// app/layout.tsx
+import localFont from 'next/font/local';
+
+const pretendard = localFont({
+  src: '../public/fonts/Pretendard-Variable.woff2',
+  variable: '--font-pretendard',
+});
+```
+
+**Type Scale** (use Tailwind classes):
+- Display: `text-4xl font-bold` (32pt) - App title
+- Large Number: `text-3xl font-semibold` (28pt) - Energy amount
+- H1: `text-2xl font-semibold` (22pt) - Section titles
+- H2: `text-xl font-medium` (18pt) - Card titles
+- Body: `text-base font-normal` (15pt) - General text
+- Caption: `text-sm` (13pt) - Timestamps
+
+### Spacing System (8pt grid)
+
+```typescript
+// ✅ DO: Use 8pt multiples
+const spacing = {
+  xs: '4px',   // 0.5rem
+  sm: '8px',   // 1rem
+  md: '16px',  // 2rem
+  lg: '24px',  // 3rem
+  xl: '32px',  // 4rem
+  '2xl': '40px'
+} as const;
+```
+
+**Tailwind mapping**: `p-1` (4px), `p-2` (8px), `p-4` (16px), `p-6` (24px), `p-8` (32px)
+
+### Animations
+
+**Duration Guidelines**:
+- Fast: `100-200ms` - Button feedback, color changes
+- Normal: `200-400ms` - Page transitions, card movements
+- Slow: `400-600ms` - Graph drawing, number counting
+
+**Easing**:
+```typescript
+// ✅ DO: Use Motion's built-in easings
+import { motion } from 'motion/react';
+
+<motion.div
+  initial={{ opacity: 0, scale: 0.9 }}
+  animate={{ opacity: 1, scale: 1 }}
+  transition={{ duration: 0.3, ease: 'easeOut' }}
+>
+```
+
+**Common patterns**:
+- Button tap: `whileTap={{ scale: 0.95 }}`
+- Card hover: `whileHover={{ scale: 1.05 }}`
+- Page enter: `initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}`
+
+## 5. Core Features Implementation
+
+### Weather Simulation Algorithm
+
+**Seasonal patterns** (use constants from `weather-patterns.ts`):
+
+```typescript
+// ✅ DO: Use month/hour-based patterns
+export const SEASONAL_PATTERNS = {
+  solar: {
+    1: { min: 200, max: 400, volatility: 0.1 },   // Winter
+    7: { min: 800, max: 1200, volatility: 0.2 },  // Summer peak
+    // ... all 12 months
+  }
+} as const;
+
+export const TIME_MULTIPLIERS = {
+  solar: {
+    0: 0.0, 6: 0.3, 12: 1.0, 18: 0.3, 23: 0.0,  // Day/night cycle
+  }
+} as const;
+```
+
+**Price generation**:
+```typescript
+// ✅ DO: Apply seasonal + time patterns
+function generateWeatherPrice(type: WeatherType, date = new Date()): number {
+  const month = date.getMonth() + 1;
+  const hour = date.getHours();
+  
+  const pattern = SEASONAL_PATTERNS[type][month];
+  const timeMultiplier = TIME_MULTIPLIERS[type][hour];
+  
+  const basePrice = randomInRange(pattern.min, pattern.max);
+  const priceWithTime = basePrice * timeMultiplier;
+  const volatility = 1 + (Math.random() - 0.5) * pattern.volatility * 2;
+  
+  return Math.max(100, Math.round(priceWithTime * volatility));
+}
+```
+
+### 3-Minute Auto Update
+
+```typescript
+// ✅ DO: Use useEffect + setInterval
+const UPDATE_INTERVAL = 3 * 60 * 1000; // 3 minutes
+
+export function useWeatherPrices() {
+  const [weatherData, setWeatherData] = useState<WeatherData[]>([]);
+  const [lastUpdate, setLastUpdate] = useState<number>(Date.now());
+
+  const updatePrices = useCallback(() => {
+    const newPrices = generateAllWeatherPrices(new Date());
+    // Update state with new prices + history
+    setWeatherData(prevData => /* ... */);
+    setLastUpdate(Date.now());
+  }, []);
+
+  useEffect(() => {
+    updatePrices();
+    const interval = setInterval(updatePrices, UPDATE_INTERVAL);
+    return () => clearInterval(interval);
+  }, [updatePrices]);
+
+  return { weatherData, lastUpdate };
+}
+```
+
+### Trading System
+
+```typescript
+// ✅ DO: Validate before execution
+export function executeBuy(
+  portfolio: Portfolio,
+  type: WeatherType,
+  quantity: number,
+  currentPrice: number
+): Portfolio {
+  const totalCost = quantity * currentPrice;
+  
+  if (portfolio.energy < totalCost) {
+    throw new Error('에너지가 부족합니다');
+  }
+  
+  // Create transaction
+  const transaction: Transaction = {
+    id: uuidv4(),
+    type,
+    action: 'buy',
+    quantity,
+    price: currentPrice,
+    totalAmount: totalCost,
+    timestamp: Date.now(),
+  };
+  
+  // Update holdings (calculate average buy price)
+  // Return new portfolio
+}
+```
+
+### LocalStorage Management
+
+```typescript
+// ✅ DO: Use try-catch and version checking
+const STORAGE_KEYS = {
+  PORTFOLIO: 'weather-app-portfolio',
+  VERSION: 'weather-app-version',
+} as const;
+
+export function savePortfolio(portfolio: Portfolio): void {
+  try {
+    localStorage.setItem(STORAGE_KEYS.PORTFOLIO, JSON.stringify(portfolio));
+    localStorage.setItem(STORAGE_KEYS.VERSION, CURRENT_VERSION);
+  } catch (error) {
+    console.error('Failed to save portfolio:', error);
+  }
+}
+
+export function loadPortfolio(): Portfolio | null {
+  try {
+    const version = localStorage.getItem(STORAGE_KEYS.VERSION);
+    if (version !== CURRENT_VERSION) {
+      clearAllStorage();
+      return null;
+    }
+    const data = localStorage.getItem(STORAGE_KEYS.PORTFOLIO);
+    return data ? JSON.parse(data) : null;
+  } catch (error) {
+    return null;
+  }
+}
+```
+
+## 6. Component Development
+
+### Component Structure
+
+```typescript
+// ✅ DO: Follow this pattern
+'use client'; // Only for client components
+
+import { motion } from 'motion/react';
+import type { WeatherData } from '@/types';
+
+interface WeatherCardProps {
+  weather: WeatherData;
+  onClick: () => void;
+}
+
+export function WeatherCard({ weather, onClick }: WeatherCardProps) {
+  const bgColor = {
+    rising: 'bg-red-50',
+    falling: 'bg-blue-50',
+    stable: 'bg-gray-50',
+  }[weather.trend];
+
+  return (
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      onClick={onClick}
+      className={`${bgColor} rounded-3xl p-6 shadow-md`}
+    >
+      {/* Content */}
+    </motion.div>
+  );
+}
+```
+
+### Props Type Safety
+
+```typescript
+// ✅ DO: Define all props explicitly
+interface TradingModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  weather: WeatherData;
+  portfolio: Portfolio;
+  onTrade: (action: 'buy' | 'sell', quantity: number) => Promise<void>;
+}
+
+// ❌ DON'T: Use any or implicit types
+function Component(props: any) { /* ... */ }
+```
+
+### UI Components Library
+
+**Button**:
+```typescript
+interface ButtonProps {
+  children: React.ReactNode;
+  onClick?: () => void;
+  variant?: 'primary' | 'secondary' | 'danger';
+  disabled?: boolean;
+  className?: string;
+}
+
+export function Button({ 
+  children, 
+  onClick, 
+  variant = 'primary', 
+  disabled,
+  className = ''
+}: ButtonProps) {
+  const baseStyles = 'px-6 py-4 rounded-xl font-semibold transition';
+  const variants = {
+    primary: 'bg-blue-500 text-white hover:bg-blue-600',
+    secondary: 'bg-gray-100 text-gray-800 hover:bg-gray-200',
+    danger: 'bg-red-500 text-white hover:bg-red-600',
+  };
+  
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`${baseStyles} ${variants[variant]} ${className} disabled:opacity-50`}
+    >
+      {children}
+    </button>
+  );
+}
+```
+
+## 7. State Management
+
+### React 19 Actions
+
+```typescript
+// ✅ DO: Use React 19 Actions for forms
+'use client';
+
+import { useOptimistic } from 'react';
+
+export function TradeForm({ weather, onTrade }: TradeFormProps) {
+  const [optimisticPending, addOptimistic] = useOptimistic(false, () => true);
+
+  const handleSubmit = async (formData: FormData) => {
+    addOptimistic();
+    const quantity = Number(formData.get('quantity'));
+    await onTrade('buy', quantity);
+  };
+
+  return (
+    <form action={handleSubmit}>
+      <input name="quantity" type="number" />
+      <button disabled={optimisticPending}>
+        {optimisticPending ? '처리 중...' : '확인! 사기 →'}
+      </button>
+    </form>
+  );
+}
+```
+
+### Custom Hooks Pattern
+
+```typescript
+// ✅ DO: Encapsulate logic in custom hooks
+export function usePortfolio(weatherData: WeatherData[]) {
+  const [portfolio, setPortfolio] = useState<Portfolio>(() => 
+    loadPortfolio() || createInitialPortfolio()
+  );
+
+  // Calculate current prices
+  const currentPrices = useMemo(() => 
+    weatherData.reduce((acc, w) => ({ ...acc, [w.type]: w.price }), {}),
+    [weatherData]
+  );
+
+  // Auto-save on changes
+  useEffect(() => {
+    savePortfolio(portfolio);
+  }, [portfolio]);
+
+  // Trade executor
+  const executeTrade = useCallback(async (
+    action: 'buy' | 'sell',
+    type: WeatherType,
+    quantity: number
+  ) => {
+    const updatedPortfolio = action === 'buy'
+      ? executeBuy(portfolio, type, quantity, currentPrices[type])
+      : executeSell(portfolio, type, quantity, currentPrices[type]);
+    
+    setPortfolio(updatedPortfolio);
+  }, [portfolio, currentPrices]);
+
+  return { portfolio, executeTrade };
+}
+```
+
+## 8. Performance Optimization
+
+### Server Components
+
+```typescript
+// ✅ DO: Use Server Components for static content
+// app/about/page.tsx (no 'use client')
+export default function AboutPage() {
+  return (
+    <div>
+      <h1>날씨 에너지 소개</h1>
+      <p>초등학생을 위한 경제 교육 앱</p>
+    </div>
+  );
+}
+
+// ❌ DON'T: Add 'use client' unnecessarily
+'use client';
+export default function StaticPage() { /* ... */ }
+```
+
+### Dynamic Imports
+
+```typescript
+// ✅ DO: Lazy load heavy components
+import dynamic from 'next/dynamic';
+
+const TradingModal = dynamic(() => import('@/components/trading/TradingModal'), {
+  ssr: false,
+  loading: () => <p>로딩 중...</p>,
+});
+
+const WeatherChart = dynamic(() => import('@/components/weather/WeatherChart'));
+```
+
+### Image Optimization
+
+```typescript
+// ✅ DO: Use Next.js Image component
+import Image from 'next/image';
+
+<Image
+  src="/weather-bg.png"
+  width={800}
+  height={600}
+  alt="날씨 배경"
+  priority // For above-the-fold images
+/>
+```
+
+## 9. UI/UX Principles
+
+### Child-Friendly Design
+
+**Use simple terms**:
+- ✅ "사기/팔기" NOT "매수/매도"
+- ✅ "번 돈/잃은 돈" NOT "손익"
+- ✅ "가진 것들" NOT "자산"
+- ✅ "에너지" NOT "금액"
+
+**Visual feedback**:
+```typescript
+// ✅ DO: Use color + emoji for status
+const trendDisplay = {
+  rising: { bg: 'bg-red-50', emoji: '🔥', text: '올라가는 중!' },
+  falling: { bg: 'bg-blue-50', emoji: '❄️', text: '내려가는 중' },
+  stable: { bg: 'bg-gray-50', emoji: '⚪', text: '변화 없음' },
+}[weather.trend];
+```
+
+### Touch-Friendly UI
+
+**Minimum touch target**: `44x44pt`
+
+```typescript
+// ✅ DO: Ensure adequate touch areas
+<button className="w-12 h-12 min-w-[44px] min-h-[44px]">
+  {weather.emoji}
+</button>
+
+// ❌ DON'T: Small touch targets
+<button className="w-6 h-6">×</button>
+```
+
+### Accessibility
+
+```typescript
+// ✅ DO: Include ARIA labels
+<button
+  aria-label={`${weather.name} 날씨 상세보기`}
+  onClick={handleClick}
+>
+  {weather.emoji}
+</button>
+
+// ✅ DO: Ensure color contrast (4.5:1 minimum)
+// Text: #2C3E50 on background #FFFCF7 = 10.5:1 ✓
+```
+
+## 10. Development Workflow
+
+### Vercel Deployment
+
+**Configuration** (next.config.js):
+```javascript
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'standalone', // For Docker
+  experimental: {
+    turbo: {
+      // Turbopack options
+    },
+  },
+};
+
+export default nextConfig;
+```
+
+**Build Optimization**:
+```json
+// package.json
+{
+  "scripts": {
+    "dev": "next dev --turbo",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  }
+}
+```
+
+### Code Quality
+
+**Type checking before commit**:
+```bash
+npx tsc --noEmit
+```
+
+**Linting**:
+```bash
+npm run lint
+```
+
+### Git Workflow
+
+**Commit message format**:
+- `feat: Add weather simulation algorithm`
+- `fix: Resolve price update timing issue`
+- `style: Update color palette to match design`
+- `refactor: Simplify portfolio calculation logic`
+
+---
+
+## Key Development Priorities
+
+1. **Child-First UX**: Always prioritize clarity and simplicity for 10-12 year olds
+2. **Performance**: Target 60fps animations, <1s page loads
+3. **Realistic Patterns**: Weather prices must follow seasonal/time logic
+4. **Type Safety**: No `any` types, explicit interfaces for all data
+5. **Visual Feedback**: Every action needs immediate color/emoji feedback
+6. **Responsive**: Mobile-first, touch-optimized (minimum 44pt targets)
+7. **3-Minute Updates**: Reliable auto-refresh every 3 minutes
+8. **LocalStorage Resilience**: Handle version mismatches, quota errors
+
+## Quick Reference
+
+**Weather Types**: `'solar' | 'wind' | 'water' | 'heat'`
+**Update Interval**: `180000ms` (3 minutes)
+**Initial Energy**: `10000`
+**Touch Target**: `44x44pt` minimum
+**Animation Duration**: `100-400ms` typical
+**Color System**: Use exact hex from design guide
+**Spacing**: `8pt` grid (Tailwind: p-1, p-2, p-4, p-6, p-8)
+**Font**: Pretendard Variable
+
+---
+
+*Version 1.0 - Created: 2026-01-22*
