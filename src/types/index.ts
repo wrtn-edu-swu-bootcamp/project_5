@@ -1,5 +1,5 @@
 /**
- * 날씨 에너지 앱 타입 정의
+ * Tweddle 앱 타입 정의
  * 참고: docs/architecture.md 186-302줄
  */
 

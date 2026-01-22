@@ -50,7 +50,7 @@ export default function OnboardingPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center max-w-md"
         >
-          <h1 className="text-4xl font-bold mb-4">🌤️ 날씨 에너지</h1>
+          <h1 className="text-4xl font-bold mb-4">🌤️ Tweddle</h1>
           <p className="text-xl mb-2">날씨를 사고 팔면서</p>
           <p className="text-xl mb-8">경제를 배워요!</p>
           

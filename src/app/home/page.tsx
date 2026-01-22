@@ -35,6 +35,10 @@ export default function HomePage() {
     );
   }
 
+  // 디버그: weatherData 확인
+  console.log('weatherData:', weatherData);
+  console.log('weatherData.length:', weatherData.length);
+
   const isProfitable = profitLoss >= 0;
   const season = getCurrentSeason();
   const seasonEmoji = getSeasonEmoji();
@@ -43,78 +47,87 @@ export default function HomePage() {
     <main className="min-h-screen pb-20">
       {/* 헤더 */}
       <header className="p-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">🌤️ 날씨 에너지</h1>
+        <h1 className="text-2xl font-bold">🌤️ Tweddle</h1>
         <Link href="/settings">
           <button className="text-2xl">⚙️</button>
         </Link>
       </header>
 
       {/* 원형 레이아웃 */}
-      <div className="relative w-full h-96 flex items-center justify-center mb-8">
-        {/* 중앙: 총 에너지 표시 */}
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 200 }}
-          className="absolute z-10 text-center"
-        >
-          <p className="text-4xl font-bold mb-2">
-            💎 {formatEnergy(totalValue)}
-          </p>
-          <p className="text-sm text-gray-600 mb-1">내 에너지</p>
+      <div className="relative w-full min-h-[400px] flex items-center justify-center mb-8 px-6">
+        {/* 원형 컨테이너 */}
+        <div className="relative w-[400px] h-[400px]">
+          {/* 중앙: 총 에너지 표시 */}
           <motion.div
-            animate={isProfitable ? {
-              scale: [1, 1.1, 1],
-            } : {}}
-            transition={{ duration: 2, repeat: Infinity }}
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 200 }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 text-center"
           >
-            <p className={`text-lg font-semibold ${
-              isProfitable ? 'text-green-600' : 'text-red-600'
-            }`}>
-              {isProfitable ? '🟢' : '🔴'} {profitLoss >= 0 ? '+' : ''}{formatEnergy(profitLoss)}
-              <span className="text-sm ml-1">
-                ({formatPercent(profitLossPercent)})
-              </span>
+            <p className="text-3xl font-bold mb-2">
+              💎 {formatEnergy(totalValue)}
             </p>
-          </motion.div>
-        </motion.div>
-
-        {/* 원형 배치: 4가지 날씨 아이콘 */}
-        {weatherData.map((weather, index) => {
-          // 12시 방향부터 시계방향으로 90도씩 배치
-          const angle = (index * 90 - 90) * (Math.PI / 180);
-          const radius = 140;
-          const x = Math.cos(angle) * radius;
-          const y = Math.sin(angle) * radius;
-
-          return (
+            <p className="text-xs text-gray-600 mb-1">내 에너지</p>
             <motion.div
-              key={weather.type}
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.1 }}
-              className="absolute top-1/2 left-1/2"
-              style={{
-                transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
-              }}
+              animate={isProfitable ? {
+                scale: [1, 1.1, 1],
+              } : {}}
+              transition={{ duration: 2, repeat: Infinity }}
             >
-              <Link href={`/weather/${weather.type}`}>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="focus:outline-none"
-                >
-                  <WeatherIcon
-                    type={weather.type}
-                    trend={weather.trend}
-                    size="lg"
-                    animated={true}
-                  />
-                </motion.button>
-              </Link>
+              <p className={`text-base font-semibold ${
+                isProfitable ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {isProfitable ? '🟢' : '🔴'} {profitLoss >= 0 ? '+' : ''}{formatEnergy(profitLoss)}
+                <span className="text-xs ml-1">
+                  ({formatPercent(profitLossPercent)})
+                </span>
+              </p>
             </motion.div>
-          );
-        })}
+          </motion.div>
+
+          {/* 원형 배치: 4가지 날씨 아이콘 */}
+          {weatherData.map((weather, index) => {
+            // 12시 방향부터 시계방향으로 90도씩 배치
+            // index 0: 위(12시), 1: 오른쪽(3시), 2: 아래(6시), 3: 왼쪽(9시)
+            const angle = (index * 90 - 90) * (Math.PI / 180);
+            const radius = 140;
+            const centerX = 200; // 컨테이너 너비의 절반
+            const centerY = 200; // 컨테이너 높이의 절반
+            const iconSize = 96; // lg 사이즈 (w-24 = 96px)
+            
+            const x = centerX + Math.cos(angle) * radius - iconSize / 2;
+            const y = centerY + Math.sin(angle) * radius - iconSize / 2;
+
+            return (
+              <motion.div
+                key={weather.type}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.1 }}
+                className="absolute"
+                style={{
+                  left: `${x}px`,
+                  top: `${y}px`,
+                }}
+              >
+                <Link href={`/weather/${weather.type}`}>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="focus:outline-none"
+                  >
+                    <WeatherIcon
+                      type={weather.type}
+                      trend={weather.trend}
+                      size="lg"
+                      animated={true}
+                    />
+                  </motion.button>
+                </Link>
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
 
       {/* 계절 정보 */}

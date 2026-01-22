@@ -10,7 +10,7 @@ const pretendard = localFont({
 });
 
 export const metadata: Metadata = {
-  title: '날씨 에너지 앱',
+  title: 'Tweddle',
   description: '초등학생을 위한 날씨 기반 경제 교육 앱',
 };
 
