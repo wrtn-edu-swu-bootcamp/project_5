@@ -73,7 +73,7 @@ export default function WeatherDetailPage({ params }: { params: Promise<{ type: 
   return (
     <main className="min-h-screen pb-6">
       {/* 헤더 */}
-      <header className="p-6 flex items-center justify-between">
+      <header className="px-6 py-4 flex items-center justify-between">
         <button onClick={() => router.back()} className="text-2xl">←</button>
         <h1 className="text-xl font-bold">{config.name}</h1>
         <div className="w-6" />
@@ -82,7 +82,8 @@ export default function WeatherDetailPage({ params }: { params: Promise<{ type: 
       {/* 가격 정보 */}
       <section className="px-6 mb-6 text-center">
         <WeatherIcon type={weather.type} trend={weather.trend} size="lg" />
-        <p className="text-3xl font-bold mt-4 mb-2">
+        <p className="text-sm text-gray-600 mt-4 mb-1">💰 현재 가격</p>
+        <p className="text-3xl font-bold mb-2">
           {formatEnergy(weather.price)}
         </p>
         <TrendIndicator
@@ -167,8 +168,11 @@ export default function WeatherDetailPage({ params }: { params: Promise<{ type: 
 
           {/* 예상 결과 */}
           <div className="mb-6 p-4 bg-blue-50 rounded-xl space-y-2">
-            <div className="flex justify-between">
-              <span className="text-sm">총 금액</span>
+            <div className="flex justify-between items-start">
+              <div>
+                <span className="text-sm block">총 금액</span>
+                <span className="text-xs text-gray-500">{quantity}개 × {formatEnergy(weather.price)}</span>
+              </div>
               <span className="font-semibold">{formatEnergy(totalAmount)}</span>
             </div>
             <div className="flex justify-between">

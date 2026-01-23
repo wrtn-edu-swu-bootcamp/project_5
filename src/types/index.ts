@@ -77,6 +77,8 @@ export interface Holding {
   currentValue: number;          // 현재 가치
   profitLoss: number;            // 손익
   profitLossPercent: number;     // 손익률 (%)
+  firstBoughtAt?: number;        // 처음 산 날짜 (timestamp)
+  lastBoughtAt?: number;         // 마지막으로 산 날짜 (timestamp)
 }
 
 /**

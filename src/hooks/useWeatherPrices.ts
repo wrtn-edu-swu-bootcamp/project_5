@@ -32,20 +32,28 @@ export function useWeatherPrices() {
       // 첫 업데이트 (초기 로드)
       if (prevData.length === 0) {
         return Object.entries(WEATHER_CONFIGS).map(([type, config]) => {
-          const price = newPrices[type as WeatherType];
+          // 과거 48개 데이터 생성 (3분 간격 = 144분 = 2.4시간)
+          const initialHistory = [];
+          for (let i = 47; i >= 0; i--) {
+            const pastTime = new Date(now.getTime() - i * UPDATE_INTERVAL);
+            const pastPrice = generateAllWeatherPrices(pastTime)[type as WeatherType];
+            initialHistory.push({
+              timestamp: pastTime.getTime(),
+              price: pastPrice,
+            });
+          }
+          
+          const currentPrice = initialHistory[initialHistory.length - 1].price;
           
           return {
             type: type as WeatherType,
             name: config.name,
             emoji: config.emoji,
-            price,
+            price: currentPrice,
             change: 0,
             changePercent: 0,
             trend: 'stable' as const,
-            history: [{
-              timestamp,
-              price,
-            }],
+            history: initialHistory,
           };
         });
       }

@@ -61,11 +61,14 @@ export function executeBuy(
             currentValue: totalQuantity * currentPrice,
             profitLoss: (currentPrice - avgBuyPrice) * totalQuantity,
             profitLossPercent: ((currentPrice - avgBuyPrice) / avgBuyPrice) * 100,
+            firstBoughtAt: h.firstBoughtAt,  // 처음 산 날짜 유지
+            lastBoughtAt: Date.now(),        // 마지막 구매 날짜 업데이트
           }
         : h
     );
   } else {
     // 4-2. 처음 사는 거면 → 새 보유 항목 추가
+    const now = Date.now();
     updatedHoldings = [
       ...portfolio.holdings,
       {
@@ -77,6 +80,8 @@ export function executeBuy(
         currentValue: totalCost,
         profitLoss: 0,                  // 처음엔 손익 0
         profitLossPercent: 0,
+        firstBoughtAt: now,             // 처음 산 날짜
+        lastBoughtAt: now,              // 마지막 구매 날짜
       },
     ];
   }
@@ -137,7 +142,7 @@ export function executeSell(
     // 4-1. 전량 매도 → 항목 제거
     updatedHoldings = portfolio.holdings.filter(h => h.type !== type);
   } else {
-    // 4-2. 일부 매도 → 수량 감소
+    // 4-2. 일부 매도 → 수량 감소 (날짜는 유지)
     updatedHoldings = portfolio.holdings.map(h =>
       h.type === type
         ? {
@@ -149,6 +154,8 @@ export function executeSell(
             currentValue: remainingQuantity * currentPrice,
             profitLoss: (currentPrice - h.avgBuyPrice) * remainingQuantity,
             profitLossPercent: ((currentPrice - h.avgBuyPrice) / h.avgBuyPrice) * 100,
+            firstBoughtAt: h.firstBoughtAt,          // 처음 산 날짜 유지
+            lastBoughtAt: h.lastBoughtAt,            // 마지막 구매 날짜 유지
           }
         : h
     );
@@ -222,6 +229,7 @@ export function updateHoldingsPrices(
       currentValue,
       profitLoss,
       profitLossPercent,
+      // 날짜 정보는 유지
     };
   });
 }

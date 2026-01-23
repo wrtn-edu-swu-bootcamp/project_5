@@ -90,6 +90,11 @@ export default function PortfolioPage() {
                         <p className="text-sm text-gray-600">
                           지금: {formatEnergy(holding.currentPrice)}
                         </p>
+                        {holding.firstBoughtAt && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            📅 {formatTimeAgo(holding.firstBoughtAt)}에 처음 구매
+                          </p>
+                        )}
                       </div>
                     </div>
                     {weather && (
@@ -152,7 +157,7 @@ export default function PortfolioPage() {
                           {config.name} {tx.quantity}개 {isBuy ? '샀어요' : '팔았어요'}
                         </p>
                         <p className="text-sm text-gray-600">
-                          {formatEnergy(tx.totalAmount)}
+                          {isBuy ? '구매' : '판매'}: {formatEnergy(tx.totalAmount)}
                           {!isBuy && tx.profitLoss !== undefined && (
                             <span className={`ml-2 ${tx.profitLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                               {tx.profitLoss >= 0 ? '🟢' : '🔴'} {formatEnergy(tx.profitLoss)}
@@ -160,7 +165,7 @@ export default function PortfolioPage() {
                           )}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {formatTimeAgo(tx.timestamp)}
+                          📅 {formatTimeAgo(tx.timestamp)}
                         </p>
                       </div>
                     </div>

@@ -88,7 +88,6 @@ export default function OnboardingPage() {
             <h2 className="text-2xl font-bold mb-4">어디 사니? (선택)</h2>
             <p className="text-gray-600 mb-2">동네 이름을 알려주면</p>
             <p className="text-gray-600 mb-1">더 재미있어요!</p>
-            <p className="text-sm text-gray-500">(실제 날씨랑은 상관없어요)</p>
           </div>
           
           <Input

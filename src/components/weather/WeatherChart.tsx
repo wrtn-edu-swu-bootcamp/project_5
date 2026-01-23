@@ -25,8 +25,8 @@ export function WeatherChart({ history, trend }: WeatherChartProps) {
 
   const color = colors[trend];
 
-  // 데이터 포맷 (최근 24개 포인트)
-  const data = history.slice(-24).map(h => ({
+  // 데이터 포맷 (최근 48개 포인트 = 144분 = 2.4시간)
+  const data = history.slice(-48).map(h => ({
     time: format(new Date(h.timestamp), 'HH:mm'),
     price: h.price,
   }));

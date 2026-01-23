@@ -31,10 +31,10 @@ export function WeatherIcon({
     lg: 'text-6xl w-24 h-24',  // 60px
   };
   
-  // 상태별 링 색상
+  // 상태별 링 색상 (얇은 링 + 컬러 그림자)
   const ringColors = {
-    rising: 'ring-2 ring-red-500',
-    falling: 'ring-2 ring-blue-500',
+    rising: 'ring-2 ring-red-600 shadow-lg shadow-red-200',
+    falling: 'ring-2 ring-blue-600 shadow-lg shadow-blue-200',
     stable: 'ring-2 ring-gray-300',
   };
   
@@ -48,7 +48,7 @@ export function WeatherIcon({
         ${ringColors[trend]}
         rounded-full
         flex items-center justify-center
-        glass
+        bg-white/20
       `}
       animate={shouldAnimate ? {
         scale: [1, 1.1, 1],
